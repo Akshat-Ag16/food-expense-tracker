@@ -88,8 +88,6 @@ if "food_expenses" in st.session_state and st.session_state.food_expenses:
         tooltip=["Place", "Amount", "Percentage"]
         ).properties(width=400, height=300)
 
-    st.header("Summary")
-    total_spent = df["Amount"].sum()
-    st.success(f"Total amount spent is {int(total_spent)}")
-else:
-    st.info("No expenses added yet!")
+st.header("Summary")
+total_spent = df["Amount"].sum()
+st.success(f"Total amount spent is {int(total_spent)}")
