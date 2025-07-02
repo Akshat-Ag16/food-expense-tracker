@@ -48,7 +48,7 @@ with st.form("food_expense_form"):
 
 st.header("Expense History")
 
-if "food expenses" in st.session_state and st.session_state.food_expenses:
+if "food_expenses" in st.session_state and st.session_state.food_expenses:
     df = pd.DataFrame(st.session_state.food_expenses)
     st.dataframe(df)
 
