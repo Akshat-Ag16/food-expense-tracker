@@ -4,7 +4,7 @@ import datetime
 import altair as alt
 
 if "food_budgets" not in st.session_state:
-    st.session_state.food_budgets = []
+    st.session_state.food_budgets = {}
 
 st.set_page_config(page_title="Food Expense Tracker", layout="wide")
 st.title("Your weekly food expense tracker at IITGN")
