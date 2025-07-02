@@ -3,15 +3,15 @@ import pandas as pd
 import datetime
 import altair as alt
 
+if "food_budgets" not in st.session_state:
+    st.session_state.food_budgets = []
+
 st.set_page_config(page_title="Food Expense Tracker", layout="wide")
 st.title("Your weekly food expense tracker at IITGN")
 
 food_places = ['Amul','Just Chill', 'Dawat', 'GoInsta', '2D', 'TeaPost', 'South Point', 'Atul Bakery', 'Krupa General', 'Hunger Games', 'Mahavir', 'Outside Restaurant Visit', 'Online food delivery']
 
 st.sidebar.header("Set your weekly budgets")
-
-if "food_budgets" not in st.session_state:
-    st.session_state.food_budgets = {}
 
 for place in food_places:
     budget = st.sidebar.number_input(f"{place} Budget", min_value = 0, step=50, value = 0, key= f"budget_{place}")
