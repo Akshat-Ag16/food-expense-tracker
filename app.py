@@ -6,6 +6,9 @@ import altair as alt
 if "food_budgets" not in st.session_state:
     st.session_state.food_budgets = {}
 
+if "food_expenses" not in st.session_state:
+    st.session_state.food_expenses = []
+
 st.set_page_config(page_title="Food Expense Tracker", layout="wide")
 st.title("Your weekly food expense tracker at IITGN")
 
@@ -39,9 +42,6 @@ with st.form("food_expense_form"):
             "Note": note,
             "Amount": amount
         }
-
-        if "food_expenses" not in st.session_state:
-            st.session_state.food_expenses = []
 
         st.session_state.food_expenses.append(new_entry)
         st.success(f"Added {amount} in {place} on {full_timestamp}")
