@@ -16,7 +16,7 @@ st.sidebar.header("Set your weekly budgets")
 for place in food_places:
     budget = st.sidebar.number_input(f"{place} Budget", min_value = 0, step=50, value = 0, key= f"budget_{place}")
     if budget > 0:
-        st.session_state.food_budgets['place'] = budget
+        st.session_state.food_budgets[place] = budget
 
 st.header("Add food expense!")
 
