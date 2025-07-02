@@ -55,8 +55,6 @@ if "food_expenses" in st.session_state and st.session_state.food_expenses:
     st.header("Budget Alerts!")
 
     df_grouped = df.groupby("Place")["Amount"].sum().reset_index()
-    df_grouped["Percentage"] = (df_grouped["Amount"] / df_grouped["Amount"].sum() * 100).round(2)
-
 
     for _,row in df_grouped.iterrows():
         place = row["Place"]
@@ -85,7 +83,7 @@ if "food_expenses" in st.session_state and st.session_state.food_expenses:
         pie_chart = alt.Chart(df_grouped).mark_arc().encode(
         theta="Amount",
         color=alt.Color("Place", scale=alt.Scale(scheme="pastel1")),
-        tooltip=["Place", "Amount", "Percentage"]
+        tooltip=["Place", "Amount"]
         ).properties(width=400, height=300)
 
 st.header("Summary")
