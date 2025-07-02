@@ -62,7 +62,7 @@ if "food_expenses" in st.session_state and st.session_state.food_expenses:
         budget = st.session_state.food_budgets.get(place)
 
         if budget and spent > budget:
-            st.warning(f"Overspent at {place} by {{budget}-{spent}}")
+            st.warning(f"Overspent at {place} by {int(spent - budget)}")
 
     st.header("Insight Corner!")
 
