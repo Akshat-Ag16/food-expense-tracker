@@ -22,7 +22,7 @@ st.header("Add food expense!")
 
 with st.form("food_expense_form"):
     place = st.selectbox("Select Food Place", food_places)
-    amount = st.select_slider("Amount Spent", min_value = 1, value = 10, step=10)
+    amount = st.slider("Amount Spent", min_value = 1, value = 10, step=10)
     note = st.text_input("Optional Note")
 
     date_input = st.date_input("Date of Expense", value=datetime.date.today())
