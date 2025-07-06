@@ -37,7 +37,7 @@ if "user" not in st.session_state:
                     } if res_budgets.data else {}
                     res_expenses = supabase.table("expenses").select("*").eq("user_id", get_user_id()).execute()
                     st.session_state.food_expenses = res_expenses.data if res_expenses.data else []
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Login failed! Try again")
     st.stop()
