@@ -3,6 +3,37 @@ import pandas as pd
 import datetime
 import altair as alt
 
+from supabase import create_client, Client
+SUPABASE_URL = "https://cwyvjesaxmcidlsceigj.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3eXZqZXNheG1jaWRsc2NlaWdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3MjU3NjUsImV4cCI6MjA2NzMwMTc2NX0.dlKjz0NEY-EHo2au01wpwa6OPb48ly8swrJ7WqHo5Hg"
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+st.sidebar.header("Login into Your Account")
+
+auth_mode = st.sidebar.radio("Choose Action", ["Login", "Sign Up"])
+email = st.sidebar.text_input("Enter your E-mail")
+password = st.sidebar.text_input("Enter your password", type="password")
+
+if st.sidebar.button(auth_mode):
+    if auth_mode == "Sign Up":
+        res = supabase.auth.sign_up({"email": email, "password": password})
+        st.sidebar.success("Account created! You can now login")
+    else:
+        res = supabase.auth.sign_in_with_password({"email": email, "password": password})
+        if res.user:
+            st.session_state.user = res.user
+            st.sidebar.success("Logged in Successfully!")
+        else:
+            st.sidebar.error("Login failed! Try again")
+
+def get_user_id():
+    user = st.session_state.get("user")
+    if user:
+        return user.id
+    return None
+
+
 if "food_budgets" not in st.session_state:
     st.session_state.food_budgets = {}
 
@@ -18,8 +49,15 @@ st.sidebar.header("Set your weekly budgets")
 
 for place in food_places:
     budget = st.sidebar.number_input(f"{place} Budget", min_value = 0, step=50, value = 0, key= f"budget_{place}")
-    if budget > 0:
-        st.session_state.food_budgets[place] = budget
+
+    if budget > 0 and get_user_id():
+        existing = supabase.table("budgets").select("*").eq("user_id", get_user_id()).eq("place", place).execute()
+
+        if existing.data:
+            supabase.table("budgets").update({"amount": budget}).eq("id", existing.data[0]["id"]).execute() 
+        else:
+            supabase.table("budgets").insert({"user_id": get_user_id(), "place": place, "amount": budget}).execute()
+        
 
 st.header("Add food expense!")
 
@@ -35,16 +73,16 @@ with st.form("food_expense_form"):
 
     submit = st.form_submit_button("Add expense!")
 
-    if submit:
-        new_entry = {
-            "Timestamp": full_timestamp,
-            "Place": place,
-            "Note": note,
-            "Amount": amount
-        }
+    if submit and get_user_id():
+        supabase.table("expenses").insert({
+            "user_id": get_user_id(),
+            "timestamp": full_timestamp,
+            "place": place,
+            "note": note,
+            "amount": amount
+        }).execute()
 
-        st.session_state.food_expenses.append(new_entry)
-        st.success(f"Added {amount} in {place} on {full_timestamp}")
+        st.success(f"Added {amount} at {place} on {full_timestamp}")
 
 st.header("Expense History")
 
