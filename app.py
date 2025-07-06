@@ -9,29 +9,30 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-st.sidebar.header("Login into Your Account")
-
-auth_mode = st.sidebar.radio("Choose Action", ["Login", "Sign Up"])
-email = st.sidebar.text_input("Enter your E-mail")
-password = st.sidebar.text_input("Enter your password", type="password")
-
-if st.sidebar.button(auth_mode):
-    if auth_mode == "Sign Up":
-        res = supabase.auth.sign_up({"email": email, "password": password})
-        st.sidebar.success("Account created! You can now login")
-    else:
-        res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-        if res.user:
-            st.session_state.user = res.user
-            st.sidebar.success("Logged in Successfully!")
-        else:
-            st.sidebar.error("Login failed! Try again")
-
 def get_user_id():
     user = st.session_state.get("user")
     if user:
         return user.id
     return None
+
+if "user" not in st.session_state():
+    st.title("Welcome to Campus Food Expense Tracker!")
+    auth_mode = st.radio("Choose Action", ["Login", "Sign Up"])
+    email = st.text_input("Enter your E-mail")
+    password = st.text_input("Enter your password", type="password")
+
+    if st.button(auth_mode):
+        if auth_mode == "Sign Up":
+            res = supabase.auth.sign_up({"email": email, "password": password})
+            st.success("Account created! You can now login")
+        else:
+            res = supabase.auth.sign_in_with_password({"email": email, "password": password})
+            if res.user:
+                st.session_state.user = res.user
+                st.success("Logged in Successfully!")
+                st.experimental_rerun()
+            else:
+                st.error("Login failed! Try again")
 
 
 if "food_budgets" not in st.session_state:
