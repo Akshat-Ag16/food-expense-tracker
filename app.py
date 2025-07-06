@@ -15,7 +15,7 @@ def get_user_id():
         return user.id
     return None
 
-if "user" not in st.session_state():
+if "user" not in st.session_state:
     st.title("Welcome to Campus Food Expense Tracker!")
     auth_mode = st.radio("Choose Action", ["Login", "Sign Up"])
     email = st.text_input("Enter your E-mail")
@@ -30,16 +30,17 @@ if "user" not in st.session_state():
             if res.user:
                 st.session_state.user = res.user
                 st.success("Logged in Successfully!")
+                if get_user_id():
+                    res_budgets = supabase.table("budgets").select("*").eq("user_id", get_user_id()).execute()
+                    st.session_state.food_budgets = {
+                    row["place"]: row["amount"] for row in res_budgets.data
+                    } if res_budgets.data else {}
+                    res_expenses = supabase.table("expenses").select("*").eq("user_id", get_user_id()).execute()
+                    st.session_state.food_expenses = res_expenses.data if res_expenses.data else []
                 st.experimental_rerun()
             else:
                 st.error("Login failed! Try again")
-
-
-if "food_budgets" not in st.session_state:
-    st.session_state.food_budgets = {}
-
-if "food_expenses" not in st.session_state:
-    st.session_state.food_expenses = []
+    st.stop()
 
 st.set_page_config(page_title="Food Expense Tracker", layout="wide")
 st.title("Your weekly food expense tracker at IITGN")
