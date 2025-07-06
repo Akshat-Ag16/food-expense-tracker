@@ -129,6 +129,9 @@ if "food_expenses" in st.session_state and st.session_state.food_expenses:
         ).properties(width=400, height=300)
         st.altair_chart(pie_chart)
 
-st.header("Summary")
-total_spent = df["Amount"].sum()
-st.success(f"Total amount spent is {int(total_spent)}")
+    st.header("Summary")
+    total_spent = df["Amount"].sum()
+    st.success(f"Total amount spent is {int(total_spent)}")
+else:
+    st.header("Summary")
+    st.info("Nothing to summarize")
