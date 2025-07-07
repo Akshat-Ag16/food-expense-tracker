@@ -22,24 +22,30 @@ if "user" not in st.session_state:
     password = st.text_input("Enter your password", type="password")
 
     if st.button(auth_mode):
-        if auth_mode == "Sign Up":
-            res = supabase.auth.sign_up({"email": email, "password": password})
-            st.success("Account created! You can now login")
+        if len(password) < 6:
+            st.error("Password must be atleast 6 characters long")
         else:
-            res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-            if res.user:
-                st.session_state.user = res.user
-                st.success("Logged in Successfully!")
-                if get_user_id():
-                    res_budgets = supabase.table("budgets").select("*").eq("user_id", get_user_id()).execute()
-                    st.session_state.food_budgets = {
-                    row["place"]: row["amount"] for row in res_budgets.data
-                    } if res_budgets.data else {}
-                    res_expenses = supabase.table("expenses").select("*").eq("user_id", get_user_id()).execute()
-                    st.session_state.food_expenses = res_expenses.data if res_expenses.data else []
-                st.rerun()
-            else:
-                st.error("Login failed! Try again")
+            try:
+                if auth_mode == "Sign Up":
+                    res = supabase.auth.sign_up({"email": email, "password": password})
+                    st.success("Account created! Please check your email and verify before logging in")
+                else:
+                    res = supabase.auth.sign_in_with_password({"email": email, "password": password})
+                    if res.user:
+                        st.session_state.user = res.user
+                        st.success("Logged in Successfully!")
+                        if get_user_id():
+                            res_budgets = supabase.table("budgets").select("*").eq("user_id", get_user_id()).execute()
+                            st.session_state.food_budgets = {
+                            row["place"]: row["amount"] for row in res_budgets.data
+                            } if res_budgets.data else {}
+                            res_expenses = supabase.table("expenses").select("*").eq("user_id", get_user_id()).execute()
+                            st.session_state.food_expenses = res_expenses.data if res_expenses.data else []
+                        st.rerun()
+                    else:
+                        st.error("Login failed! Try again")
+            except Exception:
+                st.error("Something went wrong. Please check your details and try again!")
     st.stop()
 
 st.set_page_config(page_title="Food Expense Tracker", layout="wide")
