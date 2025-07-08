@@ -116,7 +116,6 @@ elif page == "Add Expenses":
             }).execute()
 
             st.success(f"Added {amount} at {place} on {full_timestamp}")
-            st.rerun()
 
 elif page == "Budget Alerts":
     st.header("🚨 Budget Alerts")
