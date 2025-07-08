@@ -53,6 +53,12 @@ page = st.sidebar.radio("Go to", ["Welcome", "Add Budgets", "Add Expenses", "Das
 
 user_id = get_user_id()
 
+if "food_budgets" not in st.session_state:
+    st.session_state.food_budgets = {}
+
+if "food_expenses" not in st.session_state:
+    st.session_state.food_expenses = []
+
 if page == "Logout":
     st.session_state.clear()
     st.success("Logged out sucessfully!")
