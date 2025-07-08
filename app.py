@@ -80,9 +80,9 @@ elif page == "Add Budgets":
             existing = supabase.table("budgets").select("*").eq("user_id", get_user_id()).eq("place", place).execute()
 
             if existing.data:
-                supabase.table("budgets").update({"amount": budget}).eq("id", existing.data[0]["id"]).execute() 
+                supabase.table("budgets").update({"budget_amount": budget}).eq("id", existing.data[0]["id"]).execute() 
             else:
-                supabase.table("budgets").insert({"user_id": get_user_id(), "place": place, "amount": budget}).execute()
+                supabase.table("budgets").insert({"user_id": get_user_id(), "place": place, "budget_amount": budget}).execute()
             st.session_state.food_budgets[place] = budget
 
 elif page == "Add Expenses":
