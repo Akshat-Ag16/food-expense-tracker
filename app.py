@@ -48,71 +48,91 @@ if "user" not in st.session_state:
                 st.error("Something went wrong. Please check your details and try again!")
     st.stop()
 
-st.set_page_config(page_title="Food Expense Tracker", layout="wide")
-st.title("Your weekly food expense tracker at IITGN")
+st.sidebar.title("Menu")
+page = st.sidebar.radio("Go to", ["Welcome", "Add Budgets", "Add Expenses", "Dashboard","Budget Alerts", "Logout"])
 
-food_places = ['Amul','Just Chill', 'Tapri', 'Dawat', 'GoInsta', '2D', 'TeaPost', 'South Point', 'Atul Bakery', 'Krupa General', 'Hunger Games', 'Mahavir', 'Outside Restaurant Visit', 'Online food delivery']
+user_id = get_user_id()
 
-st.sidebar.header("Set your weekly budgets")
+if page == "Logout":
+    st.session_state.clear()
+    st.success("Logged out sucessfully!")
+    st.rerun()
 
-for place in food_places:
-    budget = st.sidebar.number_input(f"{place} Budget", min_value = 0, step=50, value = 0, key= f"budget_{place}")
+elif page == "Welcome":
+    st.title("Welcome to the Campus Food Expense Tracker!")
+    st.markdown('''
+    This app helps you:
+    - Track your food spending across campus stalls  
+    - Set and monitor weekly budgets  
+    - Visualize your spending habits  
 
-    if budget > 0 and get_user_id():
-        existing = supabase.table("budgets").select("*").eq("user_id", get_user_id()).eq("place", place).execute()
+    Use the sidebar to get started! 
+    ''')
 
-        if existing.data:
-            supabase.table("budgets").update({"amount": budget}).eq("id", existing.data[0]["id"]).execute() 
-        else:
-            supabase.table("budgets").insert({"user_id": get_user_id(), "place": place, "amount": budget}).execute()
-        
+elif page == "Add Budgets":
+    st.header("Set your weekly budgets!")
+    food_places = ['Amul','Just Chill', 'Tapri', 'Dawat', 'GoInsta', '2D', 'TeaPost', 'South Point', 'Atul Bakery', 'Krupa General', 'Hunger Games', 'Mahavir', 'Outside Restaurant Visit', 'Online food delivery']
 
-st.header("Add food expense!")
+    for place in food_places:
+        budget = st.sidebar.number_input(f"{place} Budget", min_value = 0, step=50, value = 0, key= f"budget_{place}")
 
-with st.form("food_expense_form"):
-    place = st.selectbox("Select Food Place", food_places)
-    amount = st.slider("Amount Spent", min_value = 10, value = 10, step=10, max_value=1000)
-    note = st.text_input("Optional Note")
+        if budget > 0 and get_user_id():
+            existing = supabase.table("budgets").select("*").eq("user_id", get_user_id()).eq("place", place).execute()
 
-    date_input = st.date_input("Date of Expense", value=datetime.date.today())
-    time_input = st.time_input("Time of Expense", value=datetime.datetime.now().time())
+            if existing.data:
+                supabase.table("budgets").update({"amount": budget}).eq("id", existing.data[0]["id"]).execute() 
+            else:
+                supabase.table("budgets").insert({"user_id": get_user_id(), "place": place, "amount": budget}).execute()
+            st.session_state.food_budgets[place] = budget
 
-    full_timestamp = datetime.datetime.combine(date_input, time_input).strftime("%d-%m-%Y %H:%M:%S")
+elif page == "Add Expense":
+    st.header("Add food expense!")
+    food_places = ['Amul','Just Chill', 'Tapri', 'Dawat', 'GoInsta', '2D', 'TeaPost', 'South Point', 'Atul Bakery', 'Krupa General', 'Hunger Games', 'Mahavir', 'Outside Restaurant Visit', 'Online food delivery']
+    with st.form("food_expense_form"):
+        place = st.selectbox("Select Food Place", food_places)
+        amount = st.slider("Amount Spent", min_value = 10, value = 10, step=10, max_value=1000)
+        note = st.text_input("Optional Note")
 
-    submit = st.form_submit_button("Add expense!")
+        date_input = st.date_input("Date of Expense", value=datetime.date.today())
+        time_input = st.time_input("Time of Expense", value=datetime.time(12, 0))
 
-    if submit and get_user_id():
-        supabase.table("expenses").insert({
-            "user_id": get_user_id(),
-            "timestamp": full_timestamp,
-            "place": place,
-            "note": note,
-            "amount": amount
-        }).execute()
+        full_timestamp = datetime.datetime.combine(date_input, time_input).strftime("%d-%m-%Y %H:%M:%S")
 
-        st.success(f"Added {amount} at {place} on {full_timestamp}")
+        submit = st.form_submit_button("Add expense!")
 
-st.header("Expense History")
+        if submit and get_user_id():
+            supabase.table("expenses").insert({
+                "user_id": get_user_id(),
+                "timestamp": full_timestamp,
+                "place": place,
+                "note": note,
+                "amount": amount
+            }).execute()
+
+            st.success(f"Added {amount} at {place} on {full_timestamp}")
+            st.rerun()
+
+elif page == "Budget Alerts":
+    st.header("🚨 Budget Alerts")
+    if st.session_state.food_expenses:
+        df = pd.DataFrame(st.session_state.food_expenses)
+        df_grouped = df.groupby("Place")["Amount"].sum().reset_index()
+        for _, row in df_grouped.iterrows():
+            place = row["Place"]
+            spent = row["Amount"]
+            budget = st.session_state.food_budgets.get(place)
+            if budget and spent > budget:
+                st.warning(f"Overspent at **{place}** by ₹{int(spent - budget)}")
+    else:
+        st.info("No expenses added yet!")
+
+elif page == "Dashboard":
+        st.header("Insight Corner!")
 
 if "food_expenses" in st.session_state and st.session_state.food_expenses:
     df = pd.DataFrame(st.session_state.food_expenses)
-    st.dataframe(df)
-
-    st.header("Budget Alerts!")
-
     df_grouped = df.groupby("Place")["Amount"].sum().reset_index()
     df_grouped["Percentage"] = (df_grouped["Amount"] / df_grouped["Amount"].sum() * 100).round(2)
-
-
-    for _,row in df_grouped.iterrows():
-        place = row["Place"]
-        spent = row["Amount"]
-        budget = st.session_state.food_budgets.get(place)
-
-        if budget and spent > budget:
-            st.warning(f"Overspent at {place} by {int(spent - budget)}")
-
-    st.header("Insight Corner!")
 
     col1,col2 = st.columns(2)
 
