@@ -129,35 +129,35 @@ elif page == "Budget Alerts":
 elif page == "Dashboard":
         st.header("Insight Corner!")
 
-if "food_expenses" in st.session_state and st.session_state.food_expenses:
-    df = pd.DataFrame(st.session_state.food_expenses)
-    df_grouped = df.groupby("Place")["Amount"].sum().reset_index()
-    df_grouped["Percentage"] = (df_grouped["Amount"] / df_grouped["Amount"].sum() * 100).round(2)
+    if "food_expenses" in st.session_state and st.session_state.food_expenses:
+        df = pd.DataFrame(st.session_state.food_expenses)
+        df_grouped = df.groupby("Place")["Amount"].sum().reset_index()
+        df_grouped["Percentage"] = (df_grouped["Amount"] / df_grouped["Amount"].sum() * 100).round(2)
 
-    col1,col2 = st.columns(2)
+        col1,col2 = st.columns(2)
 
-    with col1:
-        st.subheader("Spending by Place")
-        bar_chart = alt.Chart(df_grouped).mark_bar().encode(
-            x=alt.X("Place"),
-            y="Amount",
-            color=alt.Color("Place", scale=alt.Scale(scheme="tableau20")),
-            tooltip = ['Place','Amount']
-        ).properties(width = 400, height = 300)
-        st.altair_chart(bar_chart)
+        with col1:
+            st.subheader("Spending by Place")
+            bar_chart = alt.Chart(df_grouped).mark_bar().encode(
+                x=alt.X("Place"),
+                y="Amount",
+                color=alt.Color("Place", scale=alt.Scale(scheme="tableau20")),
+                tooltip = ['Place','Amount']
+            ).properties(width = 400, height = 300)
+            st.altair_chart(bar_chart)
 
-    with col2:
-        st.subheader("Spending Distribution")
-        pie_chart = alt.Chart(df_grouped).mark_arc().encode(
-            theta="Amount",
-            color=alt.Color("Place", scale=alt.Scale(scheme="pastel1")),
-            tooltip=["Place", "Amount", "Percentage"]
-        ).properties(width=400, height=300)
-        st.altair_chart(pie_chart)
+        with col2:
+            st.subheader("Spending Distribution")
+            pie_chart = alt.Chart(df_grouped).mark_arc().encode(
+                theta="Amount",
+                color=alt.Color("Place", scale=alt.Scale(scheme="pastel1")),
+                tooltip=["Place", "Amount", "Percentage"]
+            ).properties(width=400, height=300)
+            st.altair_chart(pie_chart)
 
-    st.header("Summary")
-    total_spent = df["Amount"].sum()
-    st.success(f"Total amount spent is {int(total_spent)}")
-else:
-    st.header("Summary")
-    st.info("Nothing to summarize")
+        st.header("Summary")
+        total_spent = df["Amount"].sum()
+        st.success(f"Total amount spent is {int(total_spent)}")
+    else:
+        st.header("Summary")
+        st.info("Nothing to summarize")
