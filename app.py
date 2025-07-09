@@ -33,7 +33,6 @@ if "user" not in st.session_state:
                     res = supabase.auth.sign_in_with_password({"email": email, "password": password})
                     if res.user:
                         st.session_state.user = res.user
-                        st.success("Logged in Successfully!")
                         if get_user_id():
                             res_budgets = supabase.table("budgets").select("*").eq("user_id", get_user_id()).execute()
                             st.session_state.food_budgets = {
@@ -80,7 +79,8 @@ elif page == "Add Budgets":
     food_places = ['Amul','Just Chill', 'Tapri', 'Dawat', 'GoInsta', '2D', 'TeaPost', 'South Point', 'Atul Bakery', 'Krupa General', 'Hunger Games', 'Mahavir', 'Outside Restaurant Visit', 'Online food delivery']
 
     for place in food_places:
-        budget = st.sidebar.number_input(f"{place} Budget", min_value = 0, step=50, value = 0, key= f"budget_{place}")
+        existing_value = st.session_state.food_budgets.get(place, 0)
+        budget = st.sidebar.number_input(f"{place} Budget", min_value = 0, step=50, value = existing_value, key= f"budget_{place}")
 
         if budget > 0 and get_user_id():
             existing = supabase.table("budgets").select("*").eq("user_id", get_user_id()).eq("place", place).execute()
@@ -114,7 +114,8 @@ elif page == "Add Expenses":
                 "note": note,
                 "amount": amount
             }).execute()
-
+            res_expenses = supabase.table("expenses").select("*").eq("user_id", get_user_id()).order("timestamp", desc=True).execute()
+            st.session_state.food_expenses = res_expenses.data if res_expenses.data else []
             st.success(f"Added {amount} at {place} on {full_timestamp}")
 
 elif page == "Budget Alerts":
