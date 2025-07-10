@@ -6,7 +6,7 @@ from supabase import create_client, Client
 
 # ---------- Supabase Setup ----------
 SUPABASE_URL = "https://cwyvjesaxmcidlsceigj.supabase.co"
-SUPABASE_KEY = "YOUR_SUPABASE_KEY"  # Replace this with your real key
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3eXZqZXNheG1jaWRsc2NlaWdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3MjU3NjUsImV4cCI6MjA2NzMwMTc2NX0.dlKjz0NEY-EHo2au01wpwa6OPb48ly8swrJ7WqHo5Hg"  # Replace this with your real key
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ---------- Helpers ----------
