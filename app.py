@@ -4,15 +4,27 @@ import datetime
 import altair as alt
 from supabase import create_client, Client
 
-# Supabase setup
+# ---------- Supabase Setup ----------
 SUPABASE_URL = "https://cwyvjesaxmcidlsceigj.supabase.co"
-SUPABASE_KEY = "YOUR_SUPABASE_KEY"  # Replace with your key
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3eXZqZXNheG1jaWRsc2NlaWdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3MjU3NjUsImV4cCI6MjA2NzMwMTc2NX0.dlKjz0NEY-EHo2au01wpwa6OPb48ly8swrJ7WqHo5Hg"  # Replace this with your real key
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# ---------- Helper ----------
+# ---------- Helpers ----------
 def get_user_id():
     user = st.session_state.get("user")
     return user.id if user else None
+
+def load_user_data():
+    uid = get_user_id()
+    if uid:
+        budgets = supabase.table("budgets").select("*").eq("user_id", uid).execute()
+        expenses = supabase.table("expenses").select("*").eq("user_id", uid).order("timestamp", desc=True).execute()
+
+        st.session_state.food_budgets = {
+            row["place"]: row["budget_amount"] for row in budgets.data
+        } if budgets.data else {}
+
+        st.session_state.food_expenses = expenses.data if expenses.data else []
 
 # ---------- Login ----------
 if "user" not in st.session_state:
@@ -28,40 +40,28 @@ if "user" not in st.session_state:
             try:
                 if auth_mode == "Sign Up":
                     supabase.auth.sign_up({"email": email, "password": password})
-                    st.success("Account created! Please verify email before logging in.")
+                    st.success("Account created! Please verify your email before logging in.")
                 else:
                     res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-                    if res.user:
+                    if res.session and res.user:
                         st.session_state.user = res.user
-                        uid = get_user_id()
-                        # Load user's budgets and expenses
-                        budgets = supabase.table("budgets").select("*").eq("user_id", uid).execute()
-                        expenses = supabase.table("expenses").select("*").eq("user_id", uid).execute()
-
-                        st.session_state.food_budgets = {
-                            row["place"]: row["budget_amount"] for row in budgets.data
-                        } if budgets.data else {}
-
-                        st.session_state.food_expenses = expenses.data if expenses.data else []
                         st.experimental_rerun()
                     else:
-                        st.error("Login failed.")
-            except Exception:
-                st.error("Something went wrong. Try again.")
+                        st.error("Login failed. Try again.")
+            except Exception as e:
+                st.error(f"Something went wrong: {e}")
     st.stop()
 
-# ---------- Initial Setup ----------
-if "food_budgets" not in st.session_state:
-    st.session_state.food_budgets = {}
+# ---------- Load Data After Login ----------
+if "food_budgets" not in st.session_state or "food_expenses" not in st.session_state:
+    load_user_data()
 
-if "food_expenses" not in st.session_state:
-    st.session_state.food_expenses = []
-
+# ---------- App Body ----------
 food_places = ['Amul','Just Chill', 'Tapri', 'Dawat', 'GoInsta', '2D', 'TeaPost', 'South Point',
                'Atul Bakery', 'Krupa General', 'Hunger Games', 'Mahavir', 'Outside Restaurant Visit',
                'Online food delivery']
 
-# ---------- Budget Section ----------
+# ---------- Weekly Budgets ----------
 st.header("💰 Weekly Budgets")
 for place in food_places:
     current = st.session_state.food_budgets.get(place, 0)
@@ -149,7 +149,6 @@ if st.button("Clear & Download Report"):
     df = pd.DataFrame(st.session_state.food_expenses)
     df = df.drop(columns=["id", "user_id"], errors="ignore")
     if not df.empty:
-        # Budget Alerts
         grouped = df.groupby("place")["amount"].sum().reset_index()
         for _, row in grouped.iterrows():
             place = row["place"]
@@ -158,11 +157,9 @@ if st.button("Clear & Download Report"):
             if budget and spent > budget:
                 st.warning(f"⚠️ Overspent at {place} by ₹{int(spent - budget)}")
 
-        # Download CSV
         csv = df.to_csv(index=False).encode('utf-8')
         st.download_button("📥 Download Report", csv, file_name="expense_report.csv", mime="text/csv")
 
-    # Clear DB + State
     uid = get_user_id()
     supabase.table("expenses").delete().eq("user_id", uid).execute()
     supabase.table("budgets").delete().eq("user_id", uid).execute()
