@@ -62,7 +62,7 @@ food_places = ['Amul','Just Chill', 'Tapri', 'Dawat', 'GoInsta', '2D', 'TeaPost'
                'Online food delivery']
 
 # ---------- Weekly Budgets ----------
-st.header("💰 Weekly Budgets")
+st.sidebar.header("💰 Weekly Budgets")
 for place in food_places:
     current = st.session_state.food_budgets.get(place, 0)
     budget = st.number_input(f"{place} Budget", min_value=0, step=50, value=current, key=f"budget_{place}")
@@ -75,6 +75,7 @@ for place in food_places:
         st.session_state.food_budgets[place] = budget
 
 # ---------- Add Expense ----------
+st.title("Campus expense Tracker!")
 st.header("🧾 Add Expense")
 with st.form("expense_form"):
     place = st.selectbox("Place", food_places)
