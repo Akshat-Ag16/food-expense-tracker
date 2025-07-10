@@ -65,7 +65,7 @@ food_places = ['Amul','Just Chill', 'Tapri', 'Dawat', 'GoInsta', '2D', 'TeaPost'
 st.sidebar.header("💰 Weekly Budgets")
 for place in food_places:
     current = st.session_state.food_budgets.get(place, 0)
-    budget = st.number_input(f"{place} Budget", min_value=0, step=50, value=current, key=f"budget_{place}")
+    budget = st.sidebar.number_input(f"{place} Budget", min_value=0, step=50, value=current, key=f"budget_{place}")
     if budget > 0:
         existing = supabase.table("budgets").select("*").eq("user_id", get_user_id()).eq("place", place).execute()
         if existing.data:
