@@ -76,9 +76,9 @@ for place in food_places:
         st.session_state.food_budgets[place] = budget
 
 # ---------- Add Expense ----------
-st.title("Campus Food Expense Tracker!")
-st.subheader("Add your budgets on the left side!")
-st.warning("Add your food budgets and expenses here & get valuable insights! Clear data periodically when you want a new start and download previous expenses!")
+st.title("🥗 Campus Food Expense Tracker!")
+st.subheader("💰 Add your budgets on the left side!")
+st.warning("🚨 Add your food budgets and expenses here & get valuable insights! Clear data periodically when you want a new start and download previous expenses!")
 st.header("🧾 Add Expense")
 with st.form("expense_form"):
     place = st.selectbox("Place", food_places)
@@ -124,7 +124,7 @@ if st.session_state.food_expenses:
         if budget and spent > budget:
             st.warning(f"⚠️ Overspent at {place} by ₹{int(spent - budget)}")
         else:
-            st.warning("No overspending! Good going!")
+            st.warning(" 🎉 No overspending! Good going!")
 
     # ---------- Dashboard ----------
     st.header("📊 Insight Corner")
