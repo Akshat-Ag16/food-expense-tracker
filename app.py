@@ -45,6 +45,7 @@ if "user" not in st.session_state:
                     res = supabase.auth.sign_in_with_password({"email": email, "password": password})
                     if res.session and res.user:
                         st.session_state.user = res.user
+                        st.success("Logged in Succesfully!")
                         st.rerun()
                     else:
                         st.error("Login failed. Try again.")
@@ -77,6 +78,7 @@ for place in food_places:
 # ---------- Add Expense ----------
 st.title("Campus Food Expense Tracker!")
 st.subheader("Add your budgets on the left side!")
+st.warning("Add your food budgets and expenses here & get valuable insights! Clear data periodically when you want a new start and download previous expenses!")
 st.header("🧾 Add Expense")
 with st.form("expense_form"):
     place = st.selectbox("Place", food_places)
@@ -149,6 +151,7 @@ if st.session_state.food_expenses:
 
 # ---------- Clear Data ----------
 st.header("🧹 Clear All Data")
+st.warning("Data is not cleared unless you download the report!")
 if st.button("Clear & Download Report"):
     df = pd.DataFrame(st.session_state.food_expenses)
     df = df.drop(columns=["id", "user_id"], errors="ignore")
