@@ -45,7 +45,7 @@ if "user" not in st.session_state:
                     res = supabase.auth.sign_in_with_password({"email": email, "password": password})
                     if res.session and res.user:
                         st.session_state.user = res.user
-                        st.experimental_rerun()
+                        st.rerun()
                     else:
                         st.error("Login failed. Try again.")
             except Exception as e:
@@ -75,7 +75,8 @@ for place in food_places:
         st.session_state.food_budgets[place] = budget
 
 # ---------- Add Expense ----------
-st.title("Campus expense Tracker!")
+st.title("Campus Food Expense Tracker!")
+st.subheader("Add your budgets on the left side!")
 st.header("🧾 Add Expense")
 with st.form("expense_form"):
     place = st.selectbox("Place", food_places)
@@ -129,7 +130,7 @@ if st.session_state.food_expenses:
     with col1:
         st.subheader("Spending by Place")
         bar = alt.Chart(grouped).mark_bar().encode(
-            x="place", y="amount", tooltip=["place", "amount"]
+            x="place", y="amount", tooltip=["place", "amount"], color="place"
         ).properties(width=400, height=300)
         st.altair_chart(bar)
 
