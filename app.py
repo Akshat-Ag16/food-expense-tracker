@@ -4,12 +4,10 @@ import datetime
 import altair as alt
 from supabase import create_client, Client
 
-# ---------- Supabase Setup ----------
 SUPABASE_URL = "https://cwyvjesaxmcidlsceigj.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3eXZqZXNheG1jaWRsc2NlaWdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3MjU3NjUsImV4cCI6MjA2NzMwMTc2NX0.dlKjz0NEY-EHo2au01wpwa6OPb48ly8swrJ7WqHo5Hg"  # Replace this with your real key
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# ---------- Helpers ----------
 def get_user_id():
     user = st.session_state.get("user")
     return user.id if user else None
@@ -26,7 +24,6 @@ def load_user_data():
 
         st.session_state.food_expenses = expenses.data if expenses.data else []
 
-# ---------- Login ----------
 if "user" not in st.session_state:
     st.title("🔐 Campus Food Expense Tracker")
     auth_mode = st.radio("Choose Action", ["Login", "Sign Up"])
@@ -53,17 +50,14 @@ if "user" not in st.session_state:
                 st.error(f"Something went wrong: {e}")
     st.stop()
 
-# ---------- Load Data After Login ----------
 if "food_budgets" not in st.session_state or "food_expenses" not in st.session_state:
     load_user_data()
 
-# ---------- App Body ----------
 food_places = ['Amul','Just Chill', 'Tapri', 'Dawat', 'GoInsta', '2D', 'TeaPost', 'South Point',
                'Atul Bakery', 'Krupa General', 'Hunger Games', 'Mahavir', 'Outside Restaurant Visit',
                'Online food delivery']
 
-# ---------- Weekly Budgets ----------
-st.sidebar.header("💰 Weekly Budgets")
+st.sidebar.header("💰 Add your Budgets")
 for place in food_places:
     current = st.session_state.food_budgets.get(place, 0)
     budget = st.sidebar.number_input(f"{place} Budget", min_value=0, step=50, value=current, key=f"budget_{place}")
@@ -75,7 +69,6 @@ for place in food_places:
             supabase.table("budgets").insert({"user_id": get_user_id(), "place": place, "budget_amount": budget}).execute()
         st.session_state.food_budgets[place] = budget
 
-# ---------- Add Expense ----------
 st.title("🥗 Campus Food Expense Tracker!")
 st.subheader("💰 Add your budgets on the left side!")
 st.warning("🚨 Add your food budgets and expenses here & get valuable insights! Clear data periodically when you want a new start and download previous expenses!")
@@ -107,14 +100,12 @@ with st.form("expense_form"):
         st.session_state.food_expenses = res_exp.data
         st.success(f"Added ₹{amount} at {place} on {timestamp}")
 
-# ---------- Expense History ----------
 st.header("📜 Expense History")
 if st.session_state.food_expenses:
     df = pd.DataFrame(st.session_state.food_expenses)
     df = df.drop(columns=["id", "user_id"], errors="ignore")
     st.dataframe(df)
 
-    # ---------- Budget Alerts ----------
     st.header("🚨 Budget Alerts")
     grouped = df.groupby("place")["amount"].sum().reset_index()
     for _, row in grouped.iterrows():
@@ -126,7 +117,6 @@ if st.session_state.food_expenses:
         else:
             st.warning(f"🎉 No overspending at {place}! Good going!")
 
-    # ---------- Dashboard ----------
     st.header("📊 Insight Corner")
     grouped["percentage"] = (grouped["amount"] / grouped["amount"].sum() * 100).round(2)
     df["timestamp"] = pd.to_datetime(df["timestamp"], format='mixed', errors='coerce')
@@ -145,8 +135,6 @@ if st.session_state.food_expenses:
         ).properties(width=400, height=300)
         st.altair_chart(pie)
 
-
-    # Pie Chart: Notes
     st.subheader("📌 Expense Distribution by Note")
     st.warning("Please keep uniform notes for correct pie-charts")
     df["note_clean"] = df["note"].apply(lambda x: x.strip() if x and x.strip() else "Untitled")
@@ -161,12 +149,10 @@ if st.session_state.food_expenses:
 
     st.altair_chart(pie_by_note)
 
-    # Line Chart: Weekday-wise Spending per Place
     st.subheader("📈 Spending Trend: Weekday vs Place")
     df["weekday"] = df["timestamp"].dt.day_name()
     weekday_group = df.groupby(["weekday", "place"])["amount"].sum().reset_index()
 
-    # To maintain Mon-Sun order
     weekday_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     weekday_group["weekday"] = pd.Categorical(weekday_group["weekday"], categories=weekday_order, ordered=True)
     weekday_group = weekday_group.sort_values("weekday")
@@ -180,12 +166,9 @@ if st.session_state.food_expenses:
 
     st.altair_chart(line_chart)
 
-
-    # ---------- Summary ----------
     st.header("📌 Summary")
     st.success(f"Total Spent: ₹{int(df['amount'].sum())}")
 
-# ---------- Clear Data ----------
 st.header("🧹 Clear All Data")
 st.warning("Data is not cleared unless you download the report!")
 if st.button("Clear & Download Report"):
