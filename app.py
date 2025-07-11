@@ -129,7 +129,7 @@ if st.session_state.food_expenses:
     # ---------- Dashboard ----------
     st.header("📊 Insight Corner")
     grouped["percentage"] = (grouped["amount"] / grouped["amount"].sum() * 100).round(2)
-    df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
+    df["timestamp"] = pd.to_datetime(df["timestamp"], format='mixed', errors='coerce')
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("Spending by Place")
