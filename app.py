@@ -129,7 +129,7 @@ if st.session_state.food_expenses:
     # ---------- Dashboard ----------
     st.header("📊 Insight Corner")
     grouped["percentage"] = (grouped["amount"] / grouped["amount"].sum() * 100).round(2)
-
+    df["timestamp"] = pd.to_datetime(df["timestamp"], format="%d-%m-%Y %H:%M:%S")
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("Spending by Place")
@@ -144,6 +144,42 @@ if st.session_state.food_expenses:
             theta="amount", color="place", tooltip=["place", "amount", "percentage"]
         ).properties(width=400, height=300)
         st.altair_chart(pie)
+
+    col3, col4 = st.columns(2)
+    with col3:
+        # Pie Chart: Notes
+        st.subheader("📌 Expense Distribution by Note")
+        df["note_clean"] = df["note"].apply(lambda x: x.strip() if x and x.strip() else "Untitled")
+        note_group = df.groupby("note_clean")["amount"].sum().reset_index()
+        note_group["percentage"] = (note_group["amount"] / note_group["amount"].sum() * 100).round(2)
+
+        pie_by_note = alt.Chart(note_group).mark_arc().encode(
+        theta="amount",
+        color="note_clean",
+        tooltip=["note_clean", "amount", "percentage"]
+        ).properties(width=400, height=300)
+
+        st.altair_chart(pie_by_note)
+    with col4:
+        # Line Chart: Weekday-wise Spending per Place
+        st.subheader("📈 Spending Trend: Weekday vs Place")
+        df["weekday"] = df["timestamp"].dt.day_name()
+        weekday_group = df.groupby(["weekday", "place"])["amount"].sum().reset_index()
+
+        # To maintain Mon-Sun order
+        weekday_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        weekday_group["weekday"] = pd.Categorical(weekday_group["weekday"], categories=weekday_order, ordered=True)
+        weekday_group = weekday_group.sort_values("weekday")
+
+        line_chart = alt.Chart(weekday_group).mark_line(point=True).encode(
+            x=alt.X("weekday:N", title="Weekday"),
+            y=alt.Y("amount:Q", title="Amount Spent"),
+            color="place:N",
+            tooltip=["place", "weekday", "amount"]
+        ).properties(width=700, height=400)
+
+        st.altair_chart(line_chart)
+
 
     # ---------- Summary ----------
     st.header("📌 Summary")
