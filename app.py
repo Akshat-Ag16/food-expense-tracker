@@ -156,7 +156,7 @@ if st.session_state.food_expenses:
     pie_by_note = alt.Chart(note_group).mark_arc().encode(
     theta="amount",
     color="note_clean",
-    tooltip=["note", "amount", "percentage"]
+    tooltip=["note_clean", "amount", "percentage"],
     ).properties(width=400, height=300)
 
     st.altair_chart(pie_by_note)
